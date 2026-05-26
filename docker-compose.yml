@@ -1,0 +1,173 @@
+name: docusynth
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - APP_NAME=DocuSynth
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - RAG_SERVICE_URL=http://python-rag:8000
+      - JWT_SECRET=${JWT_SECRET}
+      - MOCK_LLM=${MOCK_LLM:-true}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openrouter}
+      - LOCAL_LLM_FAST_MODE=${LOCAL_LLM_FAST_MODE:-false}
+      - OLLAMA_BASE_URL=${OLLAMA_BASE_URL:-http://host.docker.internal:11434/v1/chat/completions}
+      - OLLAMA_MODEL=${OLLAMA_MODEL:-qwen2.5:3b}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-BAAI/bge-small-en-v1.5}
+      - COUNCIL_MODEL_1=${COUNCIL_MODEL_1:-arcee-ai/trinity-large-preview:free}
+      - COUNCIL_MODEL_2=${COUNCIL_MODEL_2:-stepfun/step-3.5-flash:free}
+      - COUNCIL_MODEL_3=${COUNCIL_MODEL_3:-nvidia/nemotron-3-nano-30b-a3b:free}
+      - CHAIRMAN_MODEL=${CHAIRMAN_MODEL:-gemini-3-flash-preview}
+      - STAGE_TIMEOUT=${STAGE_TIMEOUT:-30}
+      - LLM_TIMEOUT=${LLM_TIMEOUT:-120}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      python-rag:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  python-rag:
+    build:
+      context: ./services/python-rag
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8000"
+    environment:
+      - APP_NAME=DocuSynth-RAG
+      - DATABASE_URL=${DATABASE_URL}
+      - EMBEDDING_MODEL=${EMBEDDING_MODEL:-BAAI/bge-small-en-v1.5}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5433:5432"
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER:-docusynth}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-docusynth}
+      - POSTGRES_DB=${POSTGRES_DB:-docusynth}
+    volumes:
+      - docusynth-postgres-data:/var/lib/postgresql/data
+      - ./backend/app/db/migrations_or_init.sql:/docker-entrypoint-initdb.d/01-docusynth-init.sql:ro
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-docusynth} -d ${POSTGRES_DB:-docusynth}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    volumes:
+      - docusynth-redis-data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - docusynth-prometheus-data:/prometheus
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=${GRAFANA_ADMIN_USER:-admin}
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_ADMIN_PASSWORD:-admin}
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - docusynth-grafana-data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+    networks:
+      - docusynth-net
+
+  test:
+    profiles:
+      - test
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    working_dir: /workspace
+    command: [ "pytest", "-q", "tests" ]
+    environment:
+      - PYTHONPATH=/workspace/backend
+      - DATABASE_URL=${DATABASE_URL}
+      - REDIS_URL=${REDIS_URL}
+      - JWT_SECRET=${JWT_SECRET}
+      - RAG_SERVICE_URL=http://python-rag:8000
+      - MOCK_LLM=true
+      - LLM_PROVIDER=openrouter
+    volumes:
+      - ./:/workspace
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      python-rag:
+        condition: service_healthy
+    networks:
+      - docusynth-net
+
+volumes:
+  docusynth-postgres-data:
+  docusynth-redis-data:
+  docusynth-prometheus-data:
+  docusynth-grafana-data:
+
+networks:
+  docusynth-net:
+    driver: bridge

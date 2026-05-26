@@ -1,0 +1,2 @@
+"""DocuSynth FastAPI control plane."""
+

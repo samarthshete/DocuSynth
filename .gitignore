@@ -1,0 +1,33 @@
+# ── Ignore patterns ──────────────────────────────────────────────────
+
+# Environment & secrets
+.env
+TODO.md
+docs/
+tests/benchmark_results.json
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+dist/
+build/
+
+# Data (created at runtime)
+postgres-data/
+redis-data/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+docker-compose.override.yml
+
+# OS
+.DS_Store
+Thumbs.db
