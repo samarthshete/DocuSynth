@@ -1,9 +1,10 @@
 apiVersion: 1
 
 datasources:
-  - name: DocuSynth Prometheus
+  - name: Prometheus
+    uid: prometheus
     type: prometheus
     access: proxy
     url: http://prometheus:9090
     isDefault: true
-    editable: false
+    editable: true

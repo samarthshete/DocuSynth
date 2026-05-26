@@ -22,8 +22,11 @@ def provider_name() -> str:
 
 
 def resolve_model(requested_model: str) -> str:
-    if provider_name() == "ollama":
+    provider = provider_name()
+    if provider == "ollama":
         return settings.ollama_model
+    if provider == "gemini":
+        return settings.gemini_model
     return requested_model
 
 
@@ -41,6 +44,29 @@ async def chat_completion(
     if provider == "ollama":
         url = settings.ollama_base_url
         headers = {"Content-Type": "application/json"}
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+        }
+        if temperature is not None:
+            payload["temperature"] = temperature
+        parse_mode = "openai_compat"
+    elif provider == "gemini":
+        if not settings.gemini_api_key:
+            raise RuntimeError("GEMINI_API_KEY is required when LLM_PROVIDER=gemini")
+        url = (
+            f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent"
+            f"?key={settings.gemini_api_key}"
+        )
+        headers = {"Content-Type": "application/json"}
+        payload = {
+            "contents": [{"parts": [{"text": prompt}]}],
+            "generationConfig": {"maxOutputTokens": max_tokens},
+        }
+        if temperature is not None:
+            payload["generationConfig"]["temperature"] = temperature
+        parse_mode = "gemini"
     elif provider == "openrouter":
         if not settings.openrouter_api_key:
             raise RuntimeError("OPENROUTER_API_KEY is required when LLM_PROVIDER=openrouter")
@@ -51,16 +77,16 @@ async def chat_completion(
             "HTTP-Referer": "https://github.com/regular-life/DocuSynth",
             "X-Title": "DocuSynth",
         }
+        payload = {
+            "model": model,
+            "messages": [{"role": "user", "content": prompt}],
+            "max_tokens": max_tokens,
+        }
+        if temperature is not None:
+            payload["temperature"] = temperature
+        parse_mode = "openai_compat"
     else:
         raise RuntimeError(f"unsupported LLM_PROVIDER={settings.llm_provider!r}")
-
-    payload = {
-        "model": model,
-        "messages": [{"role": "user", "content": prompt}],
-        "max_tokens": max_tokens,
-    }
-    if temperature is not None:
-        payload["temperature"] = temperature
 
     start = time.perf_counter()
     try:
@@ -97,6 +123,8 @@ async def chat_completion(
 
     try:
         data = response.json()
+        if parse_mode == "gemini":
+            return data["candidates"][0]["content"]["parts"][0]["text"]
         return data["choices"][0]["message"]["content"]
     except (KeyError, IndexError, ValueError) as exc:
         body = truncate(response.text or "")

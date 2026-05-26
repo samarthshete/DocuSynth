@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     llm_provider: str = "openrouter"
     local_llm_fast_mode: bool = False
     gemini_api_key: str | None = None
+    gemini_model: str = "gemini-2.5-flash"
     openrouter_api_key: str | None = None
     openrouter_url: str = "https://openrouter.ai/api/v1/chat/completions"
     ollama_base_url: str = "http://host.docker.internal:11434/v1/chat/completions"

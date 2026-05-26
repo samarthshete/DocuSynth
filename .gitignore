@@ -4,6 +4,9 @@
 .env
 TODO.md
 docs/
+!docs/
+docs/images/
+!docs/deployment.md
 tests/benchmark_results.json
 data/
 
@@ -31,3 +34,9 @@ docker-compose.override.yml
 # OS
 .DS_Store
 Thumbs.db
+# environment / secrets
+.env
+.env.*
+!.env.example
+!.env.railway.example
+.streamlit/secrets.toml

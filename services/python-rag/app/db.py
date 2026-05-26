@@ -7,7 +7,15 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, sessionmaker
 from app.config import get_settings
 
 settings = get_settings()
-engine = create_engine(settings.database_url, pool_pre_ping=True)
+
+
+def _normalize_database_url(url: str) -> str:
+    if url.startswith("postgresql://"):
+        return url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return url
+
+
+engine = create_engine(_normalize_database_url(settings.database_url), pool_pre_ping=True)
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
 
 
