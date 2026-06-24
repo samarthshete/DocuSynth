@@ -1,15 +1,14 @@
 import time
 from typing import Optional
 
-from sqlalchemy import select
-from sqlalchemy.orm import Session
-
 from app.config import get_settings
 from app.db.models import SemanticCacheEntry
 from app.metrics.prometheus import (
     councilai_cache_operations_total,
     councilai_pgvector_lookup_seconds,
 )
+from sqlalchemy import select
+from sqlalchemy.orm import Session
 
 settings = get_settings()
 

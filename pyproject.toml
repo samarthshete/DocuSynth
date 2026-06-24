@@ -1,0 +1,28 @@
+# Tooling config for DocuSynth (lint + type). Permissive starting point — tighten over time.
+# See docs/BUILD_TRACKER.md (W1).
+
+[tool.ruff]
+line-length = 120
+target-version = "py311"
+extend-exclude = [".venv", ".venv311", "venv", ".pycache"]
+
+[tool.ruff.lint]
+# E = pycodestyle errors, F = pyflakes (real bugs), I = import sorting.
+select = ["E", "F", "I"]
+
+[tool.ruff.lint.per-file-ignores]
+# Benchmark/stress harnesses are script-style: allow late imports, print-style f-strings,
+# scratch locals, and long report lines. They are not production code.
+"tests/bench_*.py" = ["E402", "F541", "F841", "E501"]
+"tests/stress_concurrency.py" = ["E402", "F541", "F841", "E501"]
+
+[tool.mypy]
+python_version = "3.11"
+ignore_missing_imports = true
+# Permissive baseline so the gate is green; raise strictness incrementally.
+check_untyped_defs = false
+disallow_untyped_defs = false
+warn_unused_ignores = false
+warn_return_any = false
+no_implicit_optional = false
+exclude = "(^|/)(\\.venv|\\.venv311|venv|\\.pycache|tests)/"

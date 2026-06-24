@@ -9,7 +9,7 @@ import io
 import logging
 from pathlib import Path
 
-from app.models import OCRBlock, OCRResult, DocumentMetadata, ChunkType
+from app.models import ChunkType, DocumentMetadata, OCRBlock, OCRResult
 from app.ocr.interface import OCRBackend
 
 logger = logging.getLogger(__name__)
@@ -113,7 +113,6 @@ class LayoutAwareOCR(OCRBackend):
 
         # Add header separator after first row
         if len(rows) > 1:
-            header = rows[0]
             separator = "| " + " | ".join(["---"] * len(table[0])) + " |"
             rows.insert(1, separator)
 

@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-import requests
-import time
 import statistics
 import sys
+import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
+import requests
 
 # ── Config ────────────────────────────────────────────────────────────
 

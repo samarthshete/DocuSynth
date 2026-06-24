@@ -13,10 +13,10 @@ from pathlib import Path
 
 from PyPDF2 import PdfReader
 
-from app.models import DocumentMetadata, OCRResult, OCRBlock, ChunkType
+from app.models import ChunkType, DocumentMetadata, OCRBlock, OCRResult
 from app.ocr.interface import OCRBackend
-from app.ocr.tesseract import TesseractOCR
 from app.ocr.layout_aware import LayoutAwareOCR
+from app.ocr.tesseract import TesseractOCR
 
 logger = logging.getLogger(__name__)
 

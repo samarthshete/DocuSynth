@@ -6,8 +6,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
 from app.db import init_db
-from app.routers import ingest, retrieve, retrieve_all, embed
 from app.models import HealthResponse
+from app.routers import embed, ingest, retrieve, retrieve_all
 
 logging.basicConfig(
     level=logging.INFO,

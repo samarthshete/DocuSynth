@@ -1,7 +1,6 @@
 import time
 
 import httpx
-
 from app.config import get_settings
 from app.metrics.prometheus import councilai_embedding_latency_seconds
 

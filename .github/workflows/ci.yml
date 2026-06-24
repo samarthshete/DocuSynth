@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  lint:
+    name: Lint (ruff)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install ruff
+      - run: ruff check backend services/python-rag streamlit tests
+
+  typecheck:
+    name: Type check (mypy, advisory)
+    runs-on: ubuntu-latest
+    # Advisory for now (permissive baseline per docs/BUILD_TRACKER.md W1).
+    # Does not block merges yet; strictness will be raised incrementally.
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r backend/requirements.txt -r requirements-dev.txt
+      - run: mypy backend/app
+
+  test:
+    name: Unit tests (pytest)
+    runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: backend
+      MOCK_LLM: "true"
+      DATABASE_URL: "postgresql+psycopg://u:p@localhost:5432/db"
+      REDIS_URL: "redis://localhost:6379/0"
+      JWT_SECRET: "ci-test-secret-please-change"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -r backend/requirements.txt -r requirements-dev.txt
+      # Unit tests only (bench_*/stress_* are live-server harnesses, not collected).
+      - run: pytest tests -q
+
+  build-images:
+    name: Build Docker images
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build backend image
+        run: docker build -t docusynth-backend:ci ./backend
+      - name: Build python-rag image
+        run: docker build -t docusynth-rag:ci ./services/python-rag

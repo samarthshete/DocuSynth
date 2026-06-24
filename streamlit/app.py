@@ -1,8 +1,10 @@
-import streamlit as st
-import requests
 import json
-import re
 import os
+import re
+
+import requests
+
+import streamlit as st
 
 API_BASE = os.getenv("API_BASE_URL", "http://localhost:8080")
 REQUEST_TIMEOUT = 180  # seconds

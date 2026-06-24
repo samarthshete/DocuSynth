@@ -5,6 +5,7 @@ Handles query embedding and top-K chunk retrieval from PostgreSQL + pgvector.
 """
 
 import logging
+
 from fastapi import APIRouter, HTTPException
 
 from app.models import RetrieveRequest, RetrieveResponse

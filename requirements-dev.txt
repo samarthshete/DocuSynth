@@ -1,0 +1,6 @@
+# Dev/CI tooling for DocuSynth. App deps live in backend/requirements.txt and
+# services/python-rag/requirements.txt.
+ruff>=0.6
+mypy>=1.10
+pytest>=8.2
+httpx>=0.27

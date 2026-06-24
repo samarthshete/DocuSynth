@@ -1,5 +1,7 @@
 # DocuSynth — Dockerized RAG Document Intelligence Platform
 
+[![CI](https://github.com/samarthshete/DocuSynth/actions/workflows/ci.yml/badge.svg)](https://github.com/samarthshete/DocuSynth/actions/workflows/ci.yml)
+
 DocuSynth is a production-style, multi-service document intelligence system built for end-to-end Retrieval-Augmented Generation (RAG) workflows on local infrastructure. It ingests PDFs, retrieves semantically relevant context from PostgreSQL/pgvector, accelerates repeated queries with Redis exact caching plus semantic caching, generates answers with local Ollama models, and exposes deep observability through Prometheus and Grafana.
 
 This repository demonstrates a practical, benchmarked RAG architecture suitable for real engineering portfolios: measurable latency improvements, explicit cache behavior, and reproducible containerized operations.

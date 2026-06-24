@@ -9,7 +9,7 @@ import logging
 from typing import ClassVar
 
 import torch
-from transformers import AutoTokenizer, AutoModel
+from transformers import AutoModel, AutoTokenizer
 
 logger = logging.getLogger(__name__)
 

@@ -14,8 +14,8 @@ import io
 import logging
 from pathlib import Path
 
-from PyPDF2 import PdfReader
 from PIL import Image
+from PyPDF2 import PdfReader
 
 from app.models import DocumentMetadata
 
@@ -88,9 +88,9 @@ def _inspect_pdf(file_bytes: bytes, metadata: DocumentMetadata) -> DocumentMetad
             # Multi-column docs tend to have many short lines
             sample_page = reader.pages[0]
             sample_text = sample_page.extract_text() or ""
-            lines = [l for l in sample_text.split("\n") if l.strip()]
+            lines = [ln for ln in sample_text.split("\n") if ln.strip()]
             if lines:
-                avg_line_length = sum(len(l) for l in lines) / len(lines)
+                avg_line_length = sum(len(ln) for ln in lines) / len(lines)
                 # Short avg line length with high char count → likely multi-column
                 metadata.is_multicolumn = avg_line_length < 60 and avg_chars_per_page > 500
 

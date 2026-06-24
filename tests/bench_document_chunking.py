@@ -8,8 +8,9 @@ repo_root = Path(__file__).parent.parent.absolute()
 python_rag_dir = repo_root / "services/python-rag"
 sys.path.insert(0, str(python_rag_dir))
 
-from app.models import OCRResult, OCRBlock, ChunkType, DocumentMetadata
 from app.chunking.layout_chunker import chunk_document
+from app.models import ChunkType, DocumentMetadata, OCRBlock, OCRResult
+
 
 def generate_synthetic_page(page_number: int) -> list[OCRBlock]:
     blocks = []

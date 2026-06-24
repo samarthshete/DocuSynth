@@ -6,11 +6,12 @@ Used by the FastAPI control plane for semantic caching.
 """
 
 import logging
+
 from fastapi import APIRouter, HTTPException
 
-from app.models import EmbedRequest, EmbedResponse
 from app.config import get_settings
 from app.embedding.transformer import TransformerEmbeddings
+from app.models import EmbedRequest, EmbedResponse
 
 logger = logging.getLogger(__name__)
 router = APIRouter()

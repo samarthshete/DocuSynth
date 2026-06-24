@@ -1,6 +1,7 @@
 """Retrieve-All Router — returns all stored chunks for a document."""
 
 import logging
+
 from fastapi import APIRouter, HTTPException
 
 from app.models import RetrieveAllRequest, RetrieveAllResponse

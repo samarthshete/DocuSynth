@@ -11,7 +11,8 @@ Metadata is preserved on each chunk (type, page number, source block).
 """
 
 import logging
-from app.models import OCRResult, OCRBlock, Chunk, ChunkType
+
+from app.models import Chunk, ChunkType, OCRResult
 
 logger = logging.getLogger(__name__)
 

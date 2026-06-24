@@ -9,7 +9,7 @@ from pathlib import Path
 from PIL import Image
 from PyPDF2 import PdfReader
 
-from app.models import OCRBlock, OCRResult, DocumentMetadata, ChunkType
+from app.models import ChunkType, DocumentMetadata, OCRBlock, OCRResult
 from app.ocr.interface import OCRBackend
 
 logger = logging.getLogger(__name__)

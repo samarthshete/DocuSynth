@@ -372,7 +372,8 @@ async def generate_questions_endpoint(
     )
     context_text = "\n\n---\n\n".join(chunk_texts)
     prompt = (
-        "You are an expert assessment designer. Based ONLY on the following document excerpts, generate practice questions.\n\n"
+        "You are an expert assessment designer. Based ONLY on the following document excerpts, "
+        "generate practice questions.\n\n"
         f"Document Excerpts:\n{context_text}\n\n"
         f"Generate exactly {max(1, min(request.num_questions, 20))} {question_type_instruction}.\n"
         f"Requirements:\n- Difficulty level: {max(1, min(request.difficulty, 10))}/10{bloom_clause}\n"

@@ -4,10 +4,10 @@ from typing import Optional
 
 from sqlalchemy import select
 
+from app.config import get_settings
 from app.db import ChunkRecord, SessionLocal
 from app.embedding.transformer import TransformerEmbeddings
 from app.models import Chunk, ChunkType
-from app.config import get_settings
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

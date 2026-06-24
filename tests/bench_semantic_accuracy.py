@@ -1,13 +1,13 @@
+import json
 import os
+import statistics
 import sys
 import time
-import statistics
-import json
-import requests
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional
+
+import requests
 
 # ── Configuration ──────────────────────────────────────────────────────────────
 

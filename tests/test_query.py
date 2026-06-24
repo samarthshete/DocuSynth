@@ -38,7 +38,11 @@ def test_query_returns_structured_answer(client, monkeypatch):
     assert payload["cache_result"] == "miss"
     assert payload["llm_call_count"] == 0  # mock run_council didn't increment counters
     assert "timings" in payload
-    assert {"redis_lookup_ms", "embedding_ms", "pgvector_lookup_ms", "retrieval_ms", "llm_ms", "total_ms"} <= set(payload["timings"].keys())
+    expected_timing_keys = {
+        "redis_lookup_ms", "embedding_ms", "pgvector_lookup_ms",
+        "retrieval_ms", "llm_ms", "total_ms",
+    }
+    assert expected_timing_keys <= set(payload["timings"].keys())
 
 
 def test_protected_endpoint_rejects_missing_jwt(client):

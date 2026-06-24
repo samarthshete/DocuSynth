@@ -7,12 +7,13 @@ layout-aware chunking, embedding, and storage in PostgreSQL + pgvector.
 
 import hashlib
 import logging
-from fastapi import APIRouter, UploadFile, File, HTTPException
 
-from app.models import IngestResponse
-from app.inspection.inspector import inspect_document
-from app.ocr.router import route_ocr
+from fastapi import APIRouter, File, HTTPException, UploadFile
+
 from app.chunking.layout_chunker import chunk_document
+from app.inspection.inspector import inspect_document
+from app.models import IngestResponse
+from app.ocr.router import route_ocr
 from app.retrieval.pgvector_store import PgVectorStore
 
 logger = logging.getLogger(__name__)

@@ -1,7 +1,7 @@
 from io import BytesIO
 
-import httpx
 import app.api.documents as documents_api
+import httpx
 
 
 class _FakeResponse:

@@ -1,11 +1,10 @@
-from fastapi.testclient import TestClient
-
 from app.api.auth import router as auth_router
 from app.auth.jwt import create_token
 from app.auth.security import hash_password
 from app.db.models import User
 from app.db.session import get_db
 from fastapi import FastAPI
+from fastapi.testclient import TestClient
 
 
 class _FakeQuery:

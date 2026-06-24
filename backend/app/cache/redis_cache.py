@@ -6,13 +6,12 @@ import time
 from typing import Any
 
 import redis
-from redis.exceptions import RedisError
-
 from app.config import get_settings
 from app.metrics.prometheus import (
     councilai_cache_operations_total,
     councilai_redis_lookup_seconds,
 )
+from redis.exceptions import RedisError
 
 logger = logging.getLogger(__name__)
 settings = get_settings()

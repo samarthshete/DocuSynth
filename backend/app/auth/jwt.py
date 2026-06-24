@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta, timezone
 
 import jwt
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
-from sqlalchemy.orm import Session
-
 from app.config import get_settings
 from app.db.models import User
 from app.db.session import get_db
+from fastapi import Depends, HTTPException, status
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.orm import Session
 
 auth_scheme = HTTPBearer(auto_error=False)
 
