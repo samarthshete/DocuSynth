@@ -7,10 +7,10 @@
 
 ## ▶ RESUME HERE
 
-- **Current work item:** `W1 — CI + lint/type` ✅ built & locally verified — **awaiting commit approval**. Next: `W2 — Cache invalidation`.
-- **Branch:** `ci/github-actions` (next: `feat/cache-invalidation`)
-- **Next action:** commit W1 (no attribution), push to confirm live CI green, then start W2.
-- **Last completed:** W0 committed `fb4c639`. W1 implemented: ruff clean, `pytest` 10 passed, mypy advisory, CI workflow + badge.
+- **Current work item:** `W2 — Cache invalidation (F2)` ✅ built & locally verified — **awaiting commit approval**. Next: `W3 — Citations`.
+- **Branch:** `feat/cache-invalidation` (next: `feat/citations`)
+- **Next action:** commit W2 (no attribution), then start W3. ⚠️ live e2e needs dev DB recreate (`docker compose down -v`) for the new columns; tests/CI don't.
+- **Last completed:** W0 `fb4c639`; W1 `4b5d671`. W2 built: ruff clean, `pytest` 15 passed (+5 new), compile OK.
 - **Last updated:** 2026-06-24
 
 ---
@@ -31,8 +31,8 @@
 | ID | Feature | Phase | Status | DoD met? | Branch | Spec |
 |----|---------|-------|--------|----------|--------|------|
 | W0 | Repo cleanup & credibility | 1 | ✅ | yes | `chore/cleanup-credibility` (committed `fb4c639`) | this file §W0 |
-| W1 | CI + lint/type (F4) | 1 | 🟡 | local✓ / commit pending | `ci/github-actions` | IMMEDIATE_BUILD_PLAN / FEATURE_PRIORITIZATION F4 |
-| W2 | Cache invalidation + content-hash (F2) | 1 | ⬜ | no | `feat/cache-invalidation` | IMMEDIATE_BUILD_PLAN Feature 1 |
+| W1 | CI + lint/type (F4) | 1 | ✅ | yes (local; live CI pending push) | `ci/github-actions` (committed `4b5d671`) | IMMEDIATE_BUILD_PLAN / FEATURE_PRIORITIZATION F4 |
+| W2 | Cache invalidation + content-hash (F2) | 1 | 🟡 | local✓ / commit pending | `feat/cache-invalidation` | IMMEDIATE_BUILD_PLAN Feature 1 |
 | W3 | Citations / provenance (F3) | 1 | ⬜ | no | `feat/citations` | IMMEDIATE_BUILD_PLAN Feature 2 |
 | W4 | Token + USD cost tracking (F7) | 1 | ⬜ | no | `feat/cost-tracking` | FEATURE_PRIORITIZATION F7 |
 | W5 | Faithfulness eval harness (F1) | 1 | ⬜ | no | `feat/faithfulness-eval` | IMMEDIATE_BUILD_PLAN Feature 3 |
@@ -51,7 +51,7 @@
 - [x] Final review + user approval → committed `fb4c639` (authored solely by samarthshete; no co-author trailer)
 - **DoD:** no venv tracked · README numbers == committed JSON · tracker live. ✅ met
 
-### W1 — CI + lint/type safety net (F4) 🟡 (built, commit pending)
+### W1 — CI + lint/type safety net (F4) ✅ (committed `4b5d671`)
 - [x] `pyproject.toml` (ruff E/F/I + permissive mypy; bench per-file-ignores)
 - [x] `requirements-dev.txt` (ruff, mypy, pytest, httpx)
 - [x] `.github/workflows/ci.yml` (lint · type[advisory] · test `MOCK_LLM=true` · docker build ×2)
@@ -62,13 +62,14 @@
 - **DoD:** ruff + pytest + image builds pass; mypy advisory. Locally verified; live CI pending push.
 - **Note:** mypy is advisory (`continue-on-error`) for now — 8 known type findings (pydantic-settings call-arg + redis sync/async typing); tighten later.
 
-### W2 — Cache invalidation + content-hash (F2) ⬜
-- [ ] `content_hash` on `Document` (models + init SQL); compute sha256 in `documents.py`
-- [ ] Invalidate `semantic_cache` rows on changed re-ingest
-- [ ] `doc_content_hash` on `SemanticCacheEntry`; `store_semantic` writes it
-- [ ] `lookup_semantic` hash-check → miss + `reason="stale_hash"` metric
-- [ ] `tests/test_semantic_cache_invalidation.py` passes
-- **DoD:** regression test proves stale answer never served after changed re-ingest.
+### W2 — Cache invalidation + content-hash (F2) 🟡 (built, commit pending)
+- [x] `content_hash` on `Document` (models + init SQL); compute `sha256(content)` in `documents.py`
+- [x] Invalidate `semantic_cache` rows on changed re-ingest (`invalidate_semantic_cache`)
+- [x] `doc_content_hash` on `SemanticCacheEntry`; `store_semantic` writes it; threaded via `query.py`
+- [x] `lookup_semantic` hash-check → stale entry skipped + deleted; `docusynth_semantic_cache_stale_total{event}` metric
+- [x] `tests/test_semantic_cache_invalidation.py` passes (5 tests); full suite 15 passed, ruff clean
+- **DoD:** regression test proves stale answer never served after changed re-ingest. ✅ met (unit-level).
+- **Note:** init SQL uses `ADD COLUMN IF NOT EXISTS` for idempotency; existing dev DBs need `docker compose down -v` (no Alembic yet — Phase 2 F10).
 
 ### W3 — Citations / source provenance (F3) ⬜
 - [ ] `score` on `Chunk`; `pgvector_store.retrieve` returns `1 - cosine_distance`
@@ -110,6 +111,7 @@
 | LLM-call reduction = 18.852% | ✅ measured | same |
 | semantic hit rate = 22.549% | ✅ measured | same |
 | error rate = 0.0% (122 queries) | ✅ measured | same |
+| semantic-cache stale skips/invalidations | ✅ emitted (W2) | `docusynth_semantic_cache_stale_total{event}` |
 | cache faithfulness retention | ⬜ Not measured yet | W5 |
 | retrieval recall@k / nDCG | ⬜ Not measured yet | Phase 2 (F5) |
 | tokens & USD cost per query / saved | ⬜ Not measured yet | W4 |
@@ -119,4 +121,5 @@
 
 ## Session Log
 - **2026-06-24** — W0 started. Untracked `.venv311` (4303→126 tracked files). Fixed `.gitignore` venv patterns. Reconciled README benchmark block + resume summary to committed JSON (removed 69.7x → 28.91x). Created this tracker. Committed `fb4c639` (no co-author).
-- **2026-06-24** — W1 built on `ci/github-actions`: added `pyproject.toml`, `requirements-dev.txt`, `.github/workflows/ci.yml`, README CI badge. ruff cleaned (34 auto-fixes + 4 manual; CLEAN). `pytest tests -q` → 10 passed; compileall OK. mypy advisory. **Awaiting commit approval**, then W2 (cache invalidation). **Reminder:** all commits authored solely by samarthshete — no Claude/Anthropic attribution anywhere.
+- **2026-06-24** — W1 built on `ci/github-actions`: added `pyproject.toml`, `requirements-dev.txt`, `.github/workflows/ci.yml`, README CI badge. ruff cleaned (34 auto-fixes + 4 manual; CLEAN). `pytest tests -q` → 10 passed; compileall OK. mypy advisory. Committed `4b5d671`. **Reminder:** all commits authored solely by samarthshete — no Claude/Anthropic attribution anywhere.
+- **2026-06-24** — W2 built on `feat/cache-invalidation`: `content_hash`/`doc_content_hash` columns + init-SQL `ADD COLUMN IF NOT EXISTS`; `invalidate_semantic_cache`; hash-gated `lookup_semantic` (stale → skip+delete); `documents.py` invalidates on changed re-ingest; `query.py` threads the hash; new `docusynth_semantic_cache_stale_total{event}` metric; `tests/test_semantic_cache_invalidation.py` (5 tests). ruff clean, 15 passed. **Awaiting commit approval**, then W3 (citations).

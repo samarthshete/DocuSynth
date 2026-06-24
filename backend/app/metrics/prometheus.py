@@ -93,3 +93,10 @@ councilai_query_errors_total = Counter(
     "Total /api/v1/query errors by reason",
     ["reason"],
 )
+
+councilai_semantic_cache_stale_total = Counter(
+    "docusynth_semantic_cache_stale_total",
+    "Semantic cache entries skipped on lookup or invalidated on re-ingest due to a "
+    "changed document content hash",
+    ["event"],  # event=lookup_skip | invalidate
+)

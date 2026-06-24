@@ -12,8 +12,10 @@ CREATE TABLE IF NOT EXISTS documents (
     filename VARCHAR(255) NOT NULL,
     owner_id VARCHAR(128) NOT NULL,
     metadata_json JSONB DEFAULT '{}'::jsonb,
+    content_hash VARCHAR(64),
     created_at TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE documents ADD COLUMN IF NOT EXISTS content_hash VARCHAR(64);
 
 CREATE TABLE IF NOT EXISTS chunks (
     id SERIAL PRIMARY KEY,
@@ -59,7 +61,9 @@ CREATE TABLE IF NOT EXISTS semantic_cache (
     normalized_query TEXT NOT NULL,
     response_json JSONB NOT NULL,
     embedding vector(384) NOT NULL,
+    doc_content_hash VARCHAR(64),
     created_at TIMESTAMP DEFAULT NOW()
 );
+ALTER TABLE semantic_cache ADD COLUMN IF NOT EXISTS doc_content_hash VARCHAR(64);
 
 CREATE INDEX IF NOT EXISTS idx_semantic_cache_document_id ON semantic_cache(document_id);

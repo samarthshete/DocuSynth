@@ -18,7 +18,7 @@ from app.cache.redis_cache import (
 )
 from app.cache.semantic_cache import lookup_semantic, store_semantic
 from app.council.orchestrator import run_council
-from app.db.models import QueryLog, User
+from app.db.models import Document, QueryLog, User
 from app.db.session import get_db
 from app.metrics.prometheus import (
     councilai_llm_calls_per_query,
@@ -147,9 +147,16 @@ async def query_endpoint(
     vector = await embed_query(normalized)
     timings["embedding_ms"] = _ms(time.perf_counter() - embed_t0)
 
+    # Content hash gates the semantic cache so a re-ingested (changed) document
+    # never serves a stale cached answer.
+    doc_content_hash: str | None = None
+    if request.doc_id:
+        doc_row = db.query(Document).filter(Document.id == request.doc_id).first()
+        doc_content_hash = doc_row.content_hash if doc_row else None
+
     pg_t0 = time.perf_counter()
     semantic_cached, similarity_score = lookup_semantic(
-        db, request.doc_id, normalized, vector
+        db, request.doc_id, normalized, vector, doc_content_hash
     )
     timings["pgvector_lookup_ms"] = _ms(time.perf_counter() - pg_t0)
 
@@ -242,7 +249,7 @@ async def query_endpoint(
     }
 
     set_json(redis_key, response)
-    store_semantic(db, request.doc_id, normalized, vector, response)
+    store_semantic(db, request.doc_id, normalized, vector, response, doc_content_hash)
 
     councilai_query_total.labels(cache_result=cache_result).inc()
     councilai_query_latency_seconds.labels(cache_result=cache_result).observe(

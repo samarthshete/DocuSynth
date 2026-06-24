@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 from app.audit.logger import log_tagged
 from app.auth.jwt import get_current_user
 from app.cache.redis_cache import rate_limit_allow
+from app.cache.semantic_cache import invalidate_semantic_cache
 from app.config import get_settings
 from app.db.models import Document, User
 from app.db.session import get_db
@@ -31,6 +32,7 @@ async def ingest_document(
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="file is required")
+    content_hash = hashlib.sha256(content).hexdigest()
     if not doc_id:
         digest = hashlib.md5(content[:4096]).hexdigest()[:12]
         doc_id = f"{file.filename}_{digest}"
@@ -47,6 +49,7 @@ async def ingest_document(
 
     metadata = payload.get("metadata", {})
     existing = db.query(Document).filter(Document.id == doc_id).first()
+    invalidated = 0
     if existing is None:
         db.add(
             Document(
@@ -54,11 +57,28 @@ async def ingest_document(
                 filename=file.filename or "uploaded.pdf",
                 owner_id=user.username,
                 metadata_json=metadata,
+                content_hash=content_hash,
             )
         )
         db.commit()
+    elif existing.content_hash != content_hash:
+        # Document changed -> drop cached answers that were grounded in the old content.
+        existing.content_hash = content_hash
+        existing.metadata_json = metadata
+        db.commit()
+        invalidated = invalidate_semantic_cache(db, doc_id)
 
     councilai_document_ingestion_seconds.observe(time.perf_counter() - start)
-    log_tagged("[Audit]", {"action": "ingest", "user_id": user.username, "doc_id": doc_id, "status": "success"}, db=db)
+    log_tagged(
+        "[Audit]",
+        {
+            "action": "ingest",
+            "user_id": user.username,
+            "doc_id": doc_id,
+            "status": "success",
+            "semantic_cache_invalidated": invalidated,
+        },
+        db=db,
+    )
     return payload
 

@@ -23,6 +23,7 @@ class Document(Base):
     filename: Mapped[str] = mapped_column(String(255))
     owner_id: Mapped[str] = mapped_column(String(128), index=True)
     metadata_json: Mapped[dict] = mapped_column(JSON, default=dict)
+    content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
@@ -73,5 +74,6 @@ class SemanticCacheEntry(Base):
     normalized_query: Mapped[str] = mapped_column(Text, index=True)
     response_json: Mapped[dict] = mapped_column(JSON)
     embedding: Mapped[list[float]] = mapped_column(Vector(384))
+    doc_content_hash: Mapped[str | None] = mapped_column(String(64), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
