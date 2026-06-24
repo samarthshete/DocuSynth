@@ -82,21 +82,28 @@ On each `POST /api/v1/query`:
 
 ## Benchmark Results (Validated)
 
-The following metrics are from the validated DocuSynth run:
+The following metrics are taken verbatim from the committed benchmark artifact
+[`docs/benchmarks/benchmark_ollama_fast_final.json`](docs/benchmarks/benchmark_ollama_fast_final.json)
+(single document, `single_local_fast` mode, `mock_llm=false`). Do not edit these by hand —
+regenerate them from the JSON with `make benchmark` / `make clean-benchmark`.
 
 - benchmark queries: **122 total**
 - canonical questions: **20**
 - rephrased queries: **102**
 - semantic cache hits: **23**
+- exact cache hits: **0**
+- semantic cache hit rate: **22.549%**
 - LLM-call reduction: **18.852%**
-- cold path p95 latency: **8798.772 ms**
-- semantic cache p95 latency: **126.227 ms**
-- p95 speedup: **69.706x**
+- cold path p50 / p95 / p99 latency: **6202.254 / 10377.144 / 11244.068 ms**
+- semantic cache p50 / p95 / p99 latency: **119.753 / 358.951 / 420.852 ms**
+- p95 / p99 speedup: **28.91x / 26.717x**
 - error rate: **0.0%**
 - provider: **Ollama**
 - model: **qwen2.5:3b**
 - local_fast_mode: **true**
-- resume_publishable: **true**
+
+> Note: an earlier revision of this README cited a 69.7x p95 speedup; that figure did not
+> match the committed benchmark JSON and has been corrected to the measured **28.91x**.
 
 ---
 
@@ -267,4 +274,4 @@ DocuSynth supersedes the older CouncilAI branding/runtime; active implementation
 
 ## Resume-Ready Summary
 
-Built a 6-service Dockerized RAG platform with FastAPI, PostgreSQL/pgvector, Redis, Ollama, Prometheus, and Grafana; benchmarked 122 local LLM queries with 69.7x p95 semantic-cache speedup and 18.9% LLM-call reduction.
+Built a 6-service Dockerized RAG platform with FastAPI, PostgreSQL/pgvector, Redis, Ollama, Prometheus, and Grafana; benchmarked 122 local LLM queries with 28.9x p95 semantic-cache speedup and 18.9% LLM-call reduction (0% errors).
