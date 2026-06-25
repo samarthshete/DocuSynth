@@ -2,7 +2,7 @@ import app.api.query as query_api
 
 
 async def _fake_retrieve_chunks(*_args, **_kwargs):
-    return [{"content": "retrieved chunk"}]
+    return [{"content": "retrieved chunk", "page_number": 3, "chunk_index": 0, "score": 0.91}]
 
 
 async def _fake_embed_query(*_args, **_kwargs):
@@ -43,6 +43,11 @@ def test_query_returns_structured_answer(client, monkeypatch):
         "retrieval_ms", "llm_ms", "total_ms",
     }
     assert expected_timing_keys <= set(payload["timings"].keys())
+    # W3 — citations / source provenance
+    assert "citations" in payload
+    assert payload["citations"][0]["page_number"] == 3
+    assert payload["citations"][0]["score"] == 0.91
+    assert payload["citations"][0]["snippet"] == "retrieved chunk"
 
 
 def test_protected_endpoint_rejects_missing_jwt(client):

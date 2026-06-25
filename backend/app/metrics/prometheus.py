@@ -100,3 +100,9 @@ councilai_semantic_cache_stale_total = Counter(
     "changed document content hash",
     ["event"],  # event=lookup_skip | invalidate
 )
+
+councilai_citations_per_answer = Histogram(
+    "docusynth_citations_per_answer",
+    "Number of source citations returned with a freshly generated answer",
+    buckets=(0, 1, 2, 3, 4, 5, 6, 8, 10),
+)

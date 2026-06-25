@@ -37,6 +37,22 @@ def meta_caption(data: dict) -> str:
     if data.get("peer_reviewed"):
         parts.append("📝 Peer reviewed")
     return " · ".join(parts)
+def render_citations(citations: list) -> None:
+    if not citations:
+        return
+    with st.expander(f"📎 Sources ({len(citations)})"):
+        for i, c in enumerate(citations, 1):
+            page = c.get("page_number")
+            score = c.get("score")
+            label = f"**{i}.**"
+            if page is not None:
+                label += f" p.{page}"
+            if score is not None:
+                label += f" · score {score:.3f}"
+            st.markdown(label)
+            snippet = c.get("snippet") or ""
+            if snippet:
+                st.caption(snippet)
 def try_parse_questions(raw: str) -> list:
     try:
         cleaned = re.sub(r'[\x00-\x08\x0b\x0c\x0e-\x1f]', '', raw)
@@ -144,6 +160,7 @@ with ask_tab:
             st.markdown(msg.get("content", ""))
             if msg.get("meta"):
                 st.caption(msg["meta"])
+            render_citations(msg.get("citations") or [])
 
     user_question = st.chat_input("Ask a question about the document")
     if user_question:
@@ -170,6 +187,7 @@ with ask_tab:
                             "role": "assistant",
                             "content": data["answer"],
                             "meta": meta_caption(data),
+                            "citations": data.get("citations", []),
                         })
                     else:
                         st.session_state.chat_history.append({

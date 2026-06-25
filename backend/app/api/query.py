@@ -21,6 +21,7 @@ from app.council.orchestrator import run_council
 from app.db.models import Document, QueryLog, User
 from app.db.session import get_db
 from app.metrics.prometheus import (
+    councilai_citations_per_answer,
     councilai_llm_calls_per_query,
     councilai_query_errors_total,
     councilai_query_latency_seconds,
@@ -214,6 +215,19 @@ async def query_endpoint(
         councilai_query_errors_total.labels(reason="no_chunks").inc()
         raise HTTPException(status_code=404, detail="no relevant chunks found for this question")
 
+    # Source provenance: the chunks the answer is grounded in (page + similarity score).
+    citations = [
+        {
+            "document_id": request.doc_id,
+            "page_number": chunk.get("page_number"),
+            "chunk_index": chunk.get("chunk_index"),
+            "score": chunk.get("score"),
+            "snippet": (chunk.get("content") or "")[:300],
+        }
+        for chunk in chunks_payload
+        if chunk.get("content")
+    ]
+
     # 4) Council
     llm_t0 = time.perf_counter()
     try:
@@ -240,6 +254,7 @@ async def query_endpoint(
         "council_mode": council_result.get("council_mode", "full_council"),
         "peer_reviewed": len(council_result.get("peer_reviews", [])) > 0,
         "candidates": council_result.get("candidate_answers", []),
+        "citations": citations,
         "latency": f"{(time.perf_counter() - start):.6f}s",
         "cache_hit": False,
         "cache_result": cache_result,
@@ -247,6 +262,7 @@ async def query_endpoint(
         "llm_call_count": llm_call_count,
         "timings": timings,
     }
+    councilai_citations_per_answer.observe(len(citations))
 
     set_json(redis_key, response)
     store_semantic(db, request.doc_id, normalized, vector, response, doc_content_hash)

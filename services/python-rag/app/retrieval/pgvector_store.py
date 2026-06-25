@@ -43,14 +43,15 @@ class PgVectorStore:
 
     def retrieve(self, query: str, doc_id: Optional[str], top_k: int = 5) -> list[Chunk]:
         query_vector = self.embeddings.embed_query(query)
+        distance = ChunkRecord.embedding.cosine_distance(query_vector).label("distance")
         with SessionLocal() as session:
-            stmt = select(ChunkRecord)
+            stmt = select(ChunkRecord, distance)
             if doc_id:
                 stmt = stmt.where(ChunkRecord.document_id == doc_id)
-            stmt = stmt.order_by(ChunkRecord.embedding.cosine_distance(query_vector)).limit(top_k)
-            records = session.execute(stmt).scalars().all()
+            stmt = stmt.order_by(distance).limit(top_k)
+            rows = session.execute(stmt).all()
         result: list[Chunk] = []
-        for idx, record in enumerate(records):
+        for idx, (record, dist) in enumerate(rows):
             metadata = record.metadata_json or {}
             result.append(
                 Chunk(
@@ -59,6 +60,7 @@ class PgVectorStore:
                     page_number=record.page_number or 0,
                     chunk_index=int(metadata.get("chunk_index", idx)),
                     metadata=metadata,
+                    score=round(1.0 - float(dist), 4) if dist is not None else None,
                 )
             )
         return result

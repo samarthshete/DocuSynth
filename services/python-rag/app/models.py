@@ -33,6 +33,7 @@ class Chunk(BaseModel):
     page_number: int = 0
     chunk_index: int = 0
     metadata: dict = Field(default_factory=dict)
+    score: Optional[float] = None  # cosine similarity (1 - distance); None for retrieve_all
 
 
 class OCRBlock(BaseModel):
