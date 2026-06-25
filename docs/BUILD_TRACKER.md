@@ -7,11 +7,11 @@
 
 ## ▶ RESUME HERE
 
-- **Current work item:** `W3 — Citations / source provenance (F3)` ✅ built & locally verified — **awaiting commit approval**. Next: `W4 — Cost tracking`.
-- **Branch:** `feat/citations` (next: `feat/cost-tracking`)
-- **Next action:** commit W3 (no attribution) + push, then start W4.
-- **Last completed:** W0 `fb4c639` · W1 `4b5d671` · W2 `f320a03` (all pushed). W3 built: ruff clean, `pytest` 15 passed, compile OK.
-- **Last updated:** 2026-06-24
+- **Current work item:** `W4 — Token + USD cost tracking (F7)` ⬜ not started.
+- **Branch:** next `feat/cost-tracking` (off `feat/citations`)
+- **Next action:** start W4 — parse provider token usage in `llm_client.chat_completion` (OpenAI/Gemini/Ollama shapes), per-model USD price table in `config.py`, accumulate tokens in `instrumentation.py`, emit `docusynth_llm_tokens_total` / `docusynth_query_cost_usd` / `docusynth_cost_saved_usd_total`, add `tokens`/`cost_usd` to the query response, tests. ⚠️ touches council return signatures (generator/reviewer/synthesizer) — use a thin adapter.
+- **Last completed:** W0 `fb4c639` · W1 `4b5d671` · W2 `f320a03` · W3 `f66c5b4`. **All four branches pushed to origin** (CI runs on each). All authored solely by samarthshete (no attribution).
+- **Last updated:** 2026-06-25
 
 ---
 
@@ -33,7 +33,7 @@
 | W0 | Repo cleanup & credibility | 1 | ✅ | yes | `chore/cleanup-credibility` (committed `fb4c639`) | this file §W0 |
 | W1 | CI + lint/type (F4) | 1 | ✅ | yes (local; live CI pending push) | `ci/github-actions` (committed `4b5d671`) | IMMEDIATE_BUILD_PLAN / FEATURE_PRIORITIZATION F4 |
 | W2 | Cache invalidation + content-hash (F2) | 1 | ✅ | yes (unit) | `feat/cache-invalidation` (committed `f320a03`, pushed) | IMMEDIATE_BUILD_PLAN Feature 1 |
-| W3 | Citations / provenance (F3) | 1 | 🟡 | local✓ / commit pending | `feat/citations` | IMMEDIATE_BUILD_PLAN Feature 2 |
+| W3 | Citations / provenance (F3) | 1 | ✅ | yes (backend contract) | `feat/citations` (committed `f66c5b4`, pushed) | IMMEDIATE_BUILD_PLAN Feature 2 |
 | W4 | Token + USD cost tracking (F7) | 1 | ⬜ | no | `feat/cost-tracking` | FEATURE_PRIORITIZATION F7 |
 | W5 | Faithfulness eval harness (F1) | 1 | ⬜ | no | `feat/faithfulness-eval` | IMMEDIATE_BUILD_PLAN Feature 3 |
 
@@ -71,7 +71,7 @@
 - **DoD:** regression test proves stale answer never served after changed re-ingest. ✅ met (unit-level).
 - **Note:** init SQL uses `ADD COLUMN IF NOT EXISTS` for idempotency; existing dev DBs need `docker compose down -v` (no Alembic yet — Phase 2 F10).
 
-### W3 — Citations / source provenance (F3) 🟡 (built, commit pending)
+### W3 — Citations / source provenance (F3) ✅ (committed `f66c5b4`, pushed)
 - [x] `score` on `Chunk`; `pgvector_store.retrieve` returns `1 - cosine_distance` per chunk
 - [x] `retrieve` router returns score (Chunk field, auto-serialized)
 - [x] `query.py` builds `citations[]` (document_id, page_number, chunk_index, score, snippet) in response (+ cached/semantic payloads inherit it)
@@ -125,4 +125,5 @@
 - **2026-06-24** — W0 started. Untracked `.venv311` (4303→126 tracked files). Fixed `.gitignore` venv patterns. Reconciled README benchmark block + resume summary to committed JSON (removed 69.7x → 28.91x). Created this tracker. Committed `fb4c639` (no co-author).
 - **2026-06-24** — W1 built on `ci/github-actions`: added `pyproject.toml`, `requirements-dev.txt`, `.github/workflows/ci.yml`, README CI badge. ruff cleaned (34 auto-fixes + 4 manual; CLEAN). `pytest tests -q` → 10 passed; compileall OK. mypy advisory. Committed `4b5d671`. **Reminder:** all commits authored solely by samarthshete — no Claude/Anthropic attribution anywhere.
 - **2026-06-24** — W2 built on `feat/cache-invalidation`: `content_hash`/`doc_content_hash` columns + init-SQL `ADD COLUMN IF NOT EXISTS`; `invalidate_semantic_cache`; hash-gated `lookup_semantic` (stale → skip+delete); `documents.py` invalidates on changed re-ingest; `query.py` threads the hash; new `docusynth_semantic_cache_stale_total{event}` metric; `tests/test_semantic_cache_invalidation.py` (5 tests). ruff clean, 15 passed. Committed `f320a03`; pushed W0/W1/W2 branches to origin.
-- **2026-06-24** — W3 built on `feat/citations`: RAG `Chunk.score` + `pgvector_store.retrieve` returns `1 - cosine_distance`; `query.py` builds `citations[]` and emits `docusynth_citations_per_answer`; Streamlit `render_citations` "📎 Sources"; `test_query.py` asserts passthrough. ruff clean, 15 passed, compile OK. **Awaiting commit approval**, then W4 (cost tracking).
+- **2026-06-24** — W3 built on `feat/citations`: RAG `Chunk.score` + `pgvector_store.retrieve` returns `1 - cosine_distance`; `query.py` builds `citations[]` and emits `docusynth_citations_per_answer`; Streamlit `render_citations` "📎 Sources"; `test_query.py` asserts passthrough. ruff clean, 15 passed, compile OK. Committed `f66c5b4`; pushed `feat/citations`.
+- **2026-06-25** — Phase 1 half-done (W0–W3 committed + pushed; 4 branches on origin). Next session resumes at **W4 — cost tracking** on a new `feat/cost-tracking` branch off `feat/citations`. Also refreshed `IMPLEMENTATION_STATUS.md` to reflect shipped W2/W3.

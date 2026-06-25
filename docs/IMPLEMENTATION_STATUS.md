@@ -1,6 +1,16 @@
 # DocuSynth — Implementation Status
 
 > Brutally honest, evidence-based status of every meaningful piece. Compiled 2026-06-24 from the working tree.
+> **Live build progress is tracked in [`BUILD_TRACKER.md`](BUILD_TRACKER.md)** — consult it for the current resume point.
+
+## Recently Shipped (Phase 1, as of 2026-06-25)
+Items below that this work resolved — see `BUILD_TRACKER.md` for commits/branches:
+- ✅ **W0** — `.venv311` untracked (4303→126 tracked files); README benchmark numbers reconciled to the committed JSON (the false 69.7× removed → 28.91×). *(resolves §3 "README ≠ JSON", §5.1 committed venv)*
+- ✅ **W1** — GitHub Actions CI + ruff/mypy config + lint cleanup. *(resolves §4 "no CI / linting")*
+- ✅ **W2** — Semantic-cache invalidation via document content hash; stale entries skipped + deleted; re-ingest invalidation; `docusynth_semantic_cache_stale_total`. *(resolves §3 "stale semantic cache", §4 "cache invalidation")*
+- ✅ **W3** — Source citations (page + similarity score) in query responses + Streamlit "📎 Sources"; `docusynth_citations_per_answer`. *(resolves §2 "citations", §4 "citations/source display")*
+
+Still open (next): **W4** token/USD cost tracking, **W5** faithfulness eval harness, then Phase 2 (ownership/AuthZ, secure RAG service, CORS, OTel, Alembic, HNSW…). The 🔴/⬜ items below that aren't listed above remain accurate.
 
 ## Legend
 ✅ Complete · 🟡 Partial · 🔴 Broken/risky · ⬜ Missing
